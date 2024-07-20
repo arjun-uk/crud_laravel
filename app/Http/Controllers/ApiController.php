@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\products;
 use App\Models\User;
 use App\Models\products;
 use Illuminate\Http\Request;
@@ -74,14 +73,23 @@ class ApiController extends Controller
     }
 
 
-    public function get_products(Request $request){
+    public function get_products(Request $request)
+    {
         try {
-            $products = \App\Models\products::all();
-            return response()->json([
-                'errorcode' => 0,
-               'message' => 'Products retrieved successfully',
-                'data' => $products
-            ], 200);
+            $products = products::all();
+
+            if (!$products->isEmpty()) {
+                return response()->json([
+                    'errorcode' => 0,
+                    'message' => 'Products retrieved successfully',
+                    'data' => $products
+                ], 200);
+            } else {
+                return response()->json([
+                    'errorcode' => 1,
+                    'message' => 'No products found',
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while trying to get products',
