@@ -76,7 +76,8 @@ class ApiController extends Controller
     public function get_products(Request $request)
     {
         try {
-            $products = products::all();
+    
+            $products = products::orderBy('created_at', 'desc')->get();
 
             if (!$products->isEmpty()) {
                 return response()->json([
