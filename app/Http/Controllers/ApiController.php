@@ -31,9 +31,7 @@ class ApiController extends Controller
             //$token = $user->createToken('my-app-token')->plainTextToken;
             $tokenResult = $user->createToken('authToken');
 
-             $token = $tokenResult->accessToken;
-
-
+            $token = $tokenResult->accessToken;
             return response()->json([
                 'message' => 'you have been logged in successfully',
                 'access_token' => $token,
@@ -81,7 +79,7 @@ class ApiController extends Controller
     public function get_products(Request $request)
     {
         try {
-    
+
             $products = products::orderBy('created_at', 'desc')->get();
 
             if (!$products->isEmpty()) {
