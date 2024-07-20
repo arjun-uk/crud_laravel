@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -43,12 +44,13 @@ class ApiController extends Controller
         }
     }
 
-    public function register_api(Request $request){
+    public function register_api(Request $request)
+    {
         try {
 
             $request->validate([
-                'name' =>'required|string|max:255',
-                'email' =>'required|email|unique:users',
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users',
                 'password' => 'required|min:8',
             ]);
 
@@ -59,48 +61,61 @@ class ApiController extends Controller
             ]);
 
             return response()->json([
-               'message' => 'User created successfully',
+                'message' => 'User created successfully',
                 'user' => $user
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-               'message' => 'An error occurred while trying to register',
-               "error" => $e->getMessage()
+                'message' => 'An error occurred while trying to register',
+                "error" => $e->getMessage()
             ], 500);
         }
     }
 
 
-    public function get_products(Request $request){
+    public function get_products()
+    {
         try {
-            $products = \App\Models\products::all();
-            return response()->json([
-                'errorcode' => 0,
-               'message' => 'Products retrieved successfully',
-                'data' => $products
-            ], 200);
+            //$products = \App\Models\products::all();
+            $products = products::orderBy('created_at', 'desc')->get();
+
+            if (!$products->isEmpty()) {
+               
+                return response()->json([
+                    'errorcode' => 0,
+                    'message' => 'Products retrieved successfully',
+                    'data' => $products
+                ], 200);
+
+            } else {
+                return response()->json([
+                    'errorcode' => 1,
+                    'message' => 'No products found',
+                ], 404);
+            }
         } catch (\Exception $e) {
             return response()->json([
-               'message' => 'An error occurred while trying to get products',
-               "error" => $e->getMessage()
+                'message' => 'An error occurred while trying to get products',
+                "error" => $e->getMessage()
             ], 500);
         }
-    
+
     }
 
-    public function add_product(Request $request){
+    public function add_product(Request $request)
+    {
         try {
             $request->validate([
-                'product_name' =>'required',
-                'product_price' =>'required',
-                'product_quantity' =>'required',
-                'product_category' =>'required',
-                'product_image' =>'required',
+                'product_name' => 'required',
+                'product_price' => 'required',
+                'product_quantity' => 'required',
+                'product_category' => 'required',
+                'product_image' => 'required',
             ]);
 
-            
 
-            $product = \App\Models\products::create([
+
+            $product = products::create([
                 'product_name' => $request->product_name,
                 'product_price' => $request->product_price,
                 'product_quantity' => $request->product_quantity,
@@ -109,13 +124,13 @@ class ApiController extends Controller
             ]);
 
             return response()->json([
-               'message' => 'Product created successfully',
+                'message' => 'Product created successfully',
                 'product' => $product
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-               'message' => 'An error occurred while trying to add product',
-               "error" => $e->getMessage()
+                'message' => 'An error occurred while trying to add product',
+                "error" => $e->getMessage()
             ], 500);
         }
     }
