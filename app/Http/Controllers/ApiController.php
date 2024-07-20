@@ -28,7 +28,11 @@ class ApiController extends Controller
                 ], 401);
             }
 
-            $token = $user->createToken('my-app-token')->plainTextToken;
+            //$token = $user->createToken('my-app-token')->plainTextToken;
+            $tokenResult = $user->createToken('authToken');
+
+             $token = $tokenResult->accessToken;
+
 
             return response()->json([
                 'message' => 'you have been logged in successfully',
@@ -39,7 +43,8 @@ class ApiController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred while trying to login'
+                'message' => 'An error occurred while trying to login',
+                "error" => $e->getMessage()
             ], 500);
         }
     }
