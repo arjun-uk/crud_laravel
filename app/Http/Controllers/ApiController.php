@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\products;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class ApiController extends Controller
@@ -37,7 +38,8 @@ class ApiController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'email' => $user->email,
-                'name' => $user->name
+                'name' => $user->name,
+                'user_id' => $user->id,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -136,5 +138,96 @@ class ApiController extends Controller
         }
     }
 
+    public function update_product(Request $request, $id)
+    {
 
+    }
+
+    public function delete_product($id)
+    {
+
+    }
+
+    public function search_product(Request $request)
+    {
+
+    }
+
+    public function filter_product(Request $request)
+    {
+
+    }
+
+    public function change_password(Request $request)
+    {
+        try {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required',
+                'confirm_password' => 'required|same:new_password',
+            ]);
+
+
+            $user = auth('api')->user();
+            
+
+
+            if (!$user) {
+                return response()->json([
+                    'errorcode' => 1,
+                    'message' => 'User not authenticated or invalid user instance.',
+                    "error" => $user
+                ], 401);
+            }
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'status' => 'error',
+                    'errorcode' => 1,
+                    'message' => 'Current password is incorrect.'
+                ], 200);
+            }
+            $user->password = Hash::make($request->new_password);
+            
+            $user->save();
+
+            return response()->json([
+                'status' => 'success',
+                'errorcode' => 0,
+                'message' => 'Password updated successfully.',
+                'user' => $user
+            ],200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'errorcode' => 1,
+                'message' => 'An error occurred while' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function get_profile(Request $request){
+        try {
+            $request->validate([
+                'id' =>'required'
+            ]);
+            $user = User::find($request->id);
+            if (!$user) {
+                return response()->json([
+                    'errorcode' => 1,
+                    'message' => 'User not authenticated or invalid user instance.',
+                    "error" => $user
+                ], 401);
+            }
+            return response()->json([
+                'errorcode' => 0,
+               'message' => 'User retrieved successfully',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'errorcode' => 1,
+               'message' => 'An error occurred while trying to get user profile: '. $e->getMessage()
+            ]);
+        }
+    }
 }

@@ -12,10 +12,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //api routes
 
-Route::post('/login_api', [ApiController::class,"login_api"])->name('login_api');
-Route::post('/register_api', [ApiController::class,"register_api"])->name('register_api');
+Route::post('/login_api', [ApiController::class, "login_api"])->name('login_api');
+Route::post('/register_api', [ApiController::class, "register_api"])->name('register_api');
+
+    
 
 Route::middleware('custom.token')->group(function () {
     Route::post('/products', [ApiController::class, 'get_products'])->name('get_products');
-    Route::post('/add_product',[ApiController::class, 'add_product'])->name('add_product');
+    Route::post('/add_product', [ApiController::class, 'add_product'])->name('add_product');
+    Route::post('/change_password', [ApiController::class, 'change_password'])->name('change_password');
+    Route::post('/get_profile', [ApiController::class, 'get_profile'])->name('get_profile');
 });
+
+
