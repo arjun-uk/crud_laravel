@@ -14,6 +14,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/login_api', [ApiController::class, "login_api"])->name('login_api');
 Route::post('/register_api', [ApiController::class, "register_api"])->name('register_api');
+Route::post('/send_firebase_notification', [ApiController::class, 'send_firebase_notification'])->name('send_firebase_notification');
 
     
 

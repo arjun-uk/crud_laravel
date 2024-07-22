@@ -7,6 +7,9 @@ use App\Models\products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Exception\MessagingException;
+use Kreait\Firebase\Exception\FirebaseException;
 
 class ApiController extends Controller
 {
@@ -169,7 +172,7 @@ class ApiController extends Controller
 
 
             $user = auth('api')->user();
-            
+
 
 
             if (!$user) {
@@ -187,7 +190,7 @@ class ApiController extends Controller
                 ], 200);
             }
             $user->password = Hash::make($request->new_password);
-            
+
             $user->save();
 
             return response()->json([
@@ -195,7 +198,7 @@ class ApiController extends Controller
                 'errorcode' => 0,
                 'message' => 'Password updated successfully.',
                 'user' => $user
-            ],200);
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -205,10 +208,11 @@ class ApiController extends Controller
         }
     }
 
-    public function get_profile(Request $request){
+    public function get_profile(Request $request)
+    {
         try {
             $request->validate([
-                'id' =>'required'
+                'id' => 'required'
             ]);
             $user = User::find($request->id);
             if (!$user) {
@@ -220,14 +224,126 @@ class ApiController extends Controller
             }
             return response()->json([
                 'errorcode' => 0,
-               'message' => 'User retrieved successfully',
+                'message' => 'User retrieved successfully',
                 'user' => $user
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'errorcode' => 1,
-               'message' => 'An error occurred while trying to get user profile: '. $e->getMessage()
+                'message' => 'An error occurred while trying to get user profile: ' . $e->getMessage()
             ]);
         }
     }
+
+    public function update_profile(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required',
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email,' . $request->id
+            ]);
+            $user = User::find($request->id);
+            if (!$user) {
+                return response()->json([
+                    'errorcode' => 1,
+                    'message' => 'User not authenticated or invalid user instance.',
+                    "error" => $user
+                ], 401);
+            }
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->save();
+            return response()->json([
+                'errorcode' => 0,
+                'message' => 'User profile updated successfully',
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while trying to update user profile',
+                'status' => 'error',
+            ]);
+        }
+    }
+
+    public function send_firebase_notification(Request $request)
+    {
+
+        try {
+            // Validate the request inputs
+            $request->validate([
+                'user_id' => 'required',
+                'token' => 'required',
+                'title' => 'required',
+                'body' => 'required',
+            ]);
+
+            // Find the user by ID
+            $user = User::find($request->user_id);
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not found',
+                    'status' => 'error',
+                ]);
+            }
+
+            // Construct the notification payload
+            $notification = [
+                'title' => $request->title,
+                'body' => $request->body,
+            ];
+
+            $data = [
+                'user_id' => (string) $request->user_id,
+                'token' => $request->token,
+                'name' => $user->name,
+            ];
+
+            
+         
+            $serviceAccount = storage_path('firebase.json');
+           
+
+            // Initialize Firebase
+            $firebase = (new Factory)
+            ->withServiceAccount($serviceAccount);
+
+        $messaging = $firebase->createMessaging();
+
+            $message = [
+                'token' => $request->token,
+                'notification' => $notification,
+                'data' => $data,
+            ];
+
+            // Send the notification
+            $messaging->send($message);
+
+            return response()->json([
+                'message' => 'Notification sent successfully',
+                'status' => 'success',
+                'notification' => $notification,
+                'data' => $data,
+            ]);
+
+        } catch (MessagingException $e) {
+            return response()->json([
+                'message' => 'An error occurred while sending notification: ' . $e->getMessage(),
+                'status' => 'error',
+            ]);
+        } catch (FirebaseException $e) {
+            return response()->json([
+                'message' => 'Firebase error: ' . $e->getMessage(),
+                'status' => 'error',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'status' => 'error',
+            ]);
+        }
+    }
+
+
 }
