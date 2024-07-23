@@ -39,6 +39,7 @@ class ApiController extends Controller
 
             $token = $tokenResult->accessToken;
             return response()->json([
+                'status' => 'success',
                 'message' => 'you have been logged in successfully',
                 'access_token' => $token,
                 'token_type' => 'Bearer',
@@ -316,10 +317,7 @@ class ApiController extends Controller
                 "client_x509_cert_url" => env('FIREBASE_CLIENT_X509_CERT_URL'),
                 "universe_domain" => env('FIREBASE_UNIVERSE_DOMAIN')
             ];
-            //$serviceAccount = json_decode(env('FCM_CREDENTIALS'), true);
-           
-
-            // Initialize Firebase
+         
             $firebase = (new Factory)
             ->withServiceAccount($firebaseCredentials);
 
@@ -356,6 +354,37 @@ class ApiController extends Controller
                 'message' => 'An unexpected error occurred: ' . $e->getMessage(),
                 'status' => 'error',
             ]);
+        }
+    }
+
+    public function get_all_users(Request $request) {
+        try {
+            $request ->validate([
+                'user_id'=>'required',
+            ]);
+            $user_id = $request->user_id;
+        
+            $users = User::where('id', '!=', $user_id)->get();
+            if (!$users) {
+                return response()->json([
+                    'errorcode' => 1,
+                    'status' => 'error',
+                   'message' => 'No users found',
+                ], 200);
+            }else{
+                return response()->json([
+                    'errorcode' => 0,
+                    'status' => 'success',
+                    'message' => 'Users retrieved successfully',
+                    'data' => $users
+                ], 200);
+            }
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'errorcode' => 12,
+               'message' => 'An error occurred while trying to get all users: '. $e->getMessage()
+            ],401);
         }
     }
 

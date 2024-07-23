@@ -23,6 +23,7 @@ Route::middleware('custom.token')->group(function () {
     Route::post('/add_product', [ApiController::class, 'add_product'])->name('add_product');
     Route::post('/change_password', [ApiController::class, 'change_password'])->name('change_password');
     Route::post('/get_profile', [ApiController::class, 'get_profile'])->name('get_profile');
+    Route::post('/get_all_users', [ApiController::class, 'get_all_users'])->name('get_all_users');
 });
 
 

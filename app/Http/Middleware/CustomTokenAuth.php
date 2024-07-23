@@ -15,9 +15,7 @@ class CustomTokenAuth
         try {
 
             $request->headers->set('authorization',  $request->header('token'));
-            // dd($request);
-            //     $header = $request->header('authorization');
-            //     return $this->errorResponse($request,'YAFDFASD service',0,401);
+         
             if(Auth::guard('api')->check()) {
 
                 return $next($request);
